@@ -31,6 +31,11 @@ public class GridController : MonoBehaviour
             InitializeFlowField();
 
             CurrFlowField.CreateCostField();
+
+            Vector3 worldMousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+
+            Cell destinationCell = CurrFlowField.GetCellFromWorldPos(worldMousePos);
+            CurrFlowField.CreateIntegrationField(destinationCell);
         }
     }
 
@@ -52,6 +57,12 @@ public class GridController : MonoBehaviour
             case FlowFieldDisplayType.CostField:
                 foreach (Cell cell in CurrFlowField.Grid)
                     Handles.Label(cell.WorldPos, cell.Cost.ToString(), style);
+
+                break;
+            case FlowFieldDisplayType.IntegrationField:
+                foreach (Cell cell in CurrFlowField.Grid)
+                    Handles.Label(cell.WorldPos, cell.BestCost.ToString(), style);
+
                 break;
         }
     }

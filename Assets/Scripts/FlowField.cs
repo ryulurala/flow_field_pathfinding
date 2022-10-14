@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -8,6 +9,7 @@ public class FlowField
     public Vector2Int GridSize { get; private set; }
 
     public float CellRadius { get; private set; }
+    public Cell DestinationCell;
 
     float _cellDiameter;
 
@@ -56,5 +58,71 @@ public class FlowField
                 }
             }
         }
+    }
+
+    public void CreateIntegrationField(Cell destinationCell)
+    {
+        DestinationCell = destinationCell;
+
+        DestinationCell.Cost = 0;
+        DestinationCell.BestCost = 0;
+
+        Queue<Cell> cellToCheck = new Queue<Cell>();
+
+        cellToCheck.Enqueue(DestinationCell);
+
+        while (cellToCheck.Count > 0)
+        {
+            Cell currCell = cellToCheck.Dequeue();
+            List<Cell> currNeighbors = GetNeighborCells(currCell.GridIndex, GridDirection.CardinalDirections);
+            foreach (Cell currNeighbor in currNeighbors)
+            {
+                if (currNeighbor.Cost == byte.MaxValue)
+                    continue;
+                else if (currNeighbor.Cost + currCell.BestCost < currNeighbor.BestCost)
+                {
+                    currNeighbor.BestCost = (ushort)(currNeighbor.Cost + currCell.BestCost);
+                    cellToCheck.Enqueue(currNeighbor);
+                }
+            }
+        }
+    }
+
+    public Cell GetCellFromWorldPos(Vector3 worldPos)
+    {
+        float percentX = worldPos.x / (GridSize.x * _cellDiameter);
+        float percentY = worldPos.z / (GridSize.y * _cellDiameter);
+
+        percentX = Mathf.Clamp01(percentX);
+        percentY = Mathf.Clamp01(percentY);
+
+        int x = Mathf.Clamp(Mathf.FloorToInt(GridSize.x * percentX), 0, GridSize.x - 1);
+        int y = Mathf.Clamp(Mathf.FloorToInt(GridSize.y * percentY), 0, GridSize.y - 1);
+
+        return Grid[x, y];
+    }
+
+    List<Cell> GetNeighborCells(Vector2Int nodeIndex, List<GridDirection> directions)
+    {
+        List<Cell> neightborCells = new List<Cell>();
+
+        foreach (Vector2Int currDir in directions)
+        {
+            Cell newNeighbor = GetCellAtRelativePos(nodeIndex, currDir);
+            if (newNeighbor != null)
+                neightborCells.Add(newNeighbor);
+        }
+
+        return neightborCells;
+    }
+
+    Cell GetCellAtRelativePos(Vector2Int originPos, Vector2Int relativePos)
+    {
+        Vector2Int finalPos = originPos + relativePos;
+
+        if (finalPos.x < 0 || finalPos.x >= GridSize.x || finalPos.y < 0 || finalPos.y >= GridSize.y)
+            return null;
+        else
+            return Grid[finalPos.x, finalPos.y];
     }
 }
