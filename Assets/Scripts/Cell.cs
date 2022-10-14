@@ -7,6 +7,7 @@ public class Cell
 
     public byte Cost;
     public ushort BestCost;
+    public GridDirection BestDirection;
 
     public Cell(Vector3 worldPos, Vector2Int gridIndex)
     {
@@ -15,6 +16,7 @@ public class Cell
 
         Cost = 1;
         BestCost = ushort.MaxValue;
+        BestDirection = GridDirection.None;
     }
 
     public void IncreaseCost(int amount)
