@@ -8,15 +8,15 @@ public class FlowField
     public Cell[,] Grid { get; private set; }
     public Vector2Int GridSize { get; private set; }
 
-    public float CellRadius { get; private set; }
-    public Cell DestinationCell;
+    public float CellRadius { get; private set; }   // Grid 한 칸의 반지름
+    public float CellDiameter { get; private set; } // Grid 한 칸의 지름
 
-    float _cellDiameter;
+    public Cell DestinationCell { get; set; }
 
     public FlowField(float cellRadius, Vector2Int gridSize)
     {
         CellRadius = cellRadius;
-        _cellDiameter = cellRadius * 2f;
+        CellDiameter = cellRadius * 2f;
         GridSize = gridSize;
     }
 
@@ -28,7 +28,7 @@ public class FlowField
         {
             for (int y = 0; y < GridSize.y; y++)
             {
-                Vector3 worldPos = new Vector3(_cellDiameter * x + CellRadius, 0, _cellDiameter * y + CellRadius);
+                Vector3 worldPos = new Vector3(CellDiameter * x + CellRadius, 0, CellDiameter * y + CellRadius);
                 Grid[x, y] = new Cell(worldPos, new Vector2Int(x, y));
             }
         }
@@ -90,8 +90,8 @@ public class FlowField
 
     public Cell GetCellFromWorldPos(Vector3 worldPos)
     {
-        float percentX = worldPos.x / (GridSize.x * _cellDiameter);
-        float percentY = worldPos.z / (GridSize.y * _cellDiameter);
+        float percentX = worldPos.x / (GridSize.x * CellDiameter);
+        float percentY = worldPos.z / (GridSize.y * CellDiameter);
 
         percentX = Mathf.Clamp01(percentX);
         percentY = Mathf.Clamp01(percentY);

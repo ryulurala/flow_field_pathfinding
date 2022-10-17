@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class Cell
 {
-    public Vector3 WorldPos;
+    public Vector3 WorldPos;        // Unity 좌표
     public Vector2Int GridIndex;
 
     public byte Cost;
