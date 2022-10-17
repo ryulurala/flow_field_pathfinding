@@ -28,6 +28,15 @@ public class GridController : MonoBehaviour
     void Reset()
     {
         CellRadius = 0.5f;
+        DisplayType = FlowFieldDisplayType.AllIcons;
+        GridSize = new Vector2Int(40, 25);
+    }
+
+    void Awake()
+    {
+        CellRadius = 0.5f;
+        DisplayType = FlowFieldDisplayType.AllIcons;
+        GridSize = new Vector2Int(40, 25);
     }
 
     void Update()
@@ -45,6 +54,7 @@ public class GridController : MonoBehaviour
 
             CurrFlowField.CreateFlowField();
         }
+        DrawFlowField();
     }
 
     void OnDrawGizmos()
@@ -58,7 +68,6 @@ public class GridController : MonoBehaviour
             return;
 
         DrawCostField();
-        DrawFlowField();
     }
 
     void InitializeFlowField()
@@ -87,19 +96,19 @@ public class GridController : MonoBehaviour
         GUIStyle style = new GUIStyle(GUI.skin.label);
         style.alignment = TextAnchor.MiddleCenter;
 
-        switch (DisplayType)
-        {
-            case FlowFieldDisplayType.CostField:
-                foreach (Cell cell in CurrFlowField.Grid)
-                    Handles.Label(cell.WorldPos, cell.Cost.ToString(), style);
+        // switch (DisplayType)
+        // {
+        //     case FlowFieldDisplayType.CostField:
+        //         foreach (Cell cell in CurrFlowField.Grid)
+        //             Handles.Label(cell.WorldPos, cell.Cost.ToString(), style);
 
-                break;
-            case FlowFieldDisplayType.IntegrationField:
-                foreach (Cell cell in CurrFlowField.Grid)
-                    Handles.Label(cell.WorldPos, cell.BestCost.ToString(), style);
+        //         break;
+        //     case FlowFieldDisplayType.IntegrationField:
+        //         foreach (Cell cell in CurrFlowField.Grid)
+        //             Handles.Label(cell.WorldPos, cell.BestCost.ToString(), style);
 
-                break;
-        }
+        //         break;
+        // }
     }
 
     void DrawFlowField()
