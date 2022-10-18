@@ -42,20 +42,12 @@ public class FlowField
         foreach (Cell currCell in Grid)
         {
             Collider[] obstacles = Physics.OverlapBox(currCell.WorldPos, cellHalfExtents, Quaternion.identity, terrainMask);
-            bool hasIncreasedCost = false;
             foreach (Collider collider in obstacles)
             {
                 if (collider.gameObject.layer == LayerMask.NameToLayer("Impassible"))
-                {
                     currCell.IncreaseCost(255);
-
-                    continue;
-                }
-                else if (!hasIncreasedCost && collider.gameObject.layer == LayerMask.NameToLayer("RoughTerrain"))
-                {
+                else if (collider.gameObject.layer == LayerMask.NameToLayer("RoughTerrain"))
                     currCell.IncreaseCost(3);
-                    hasIncreasedCost = true;
-                }
             }
         }
     }
