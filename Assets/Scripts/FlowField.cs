@@ -113,13 +113,15 @@ public class FlowField
         }
     }
 
-    List<Cell> GetNeighborCells(Vector2Int nodeIndex, List<GridDirection> directions)
+    List<Cell> GetNeighborCells(Vector2Int gridIndex, List<GridDirection> directions)
     {
         List<Cell> neightborCells = new List<Cell>();
 
-        foreach (Vector2Int currDir in directions)
+        for (int i = 0; i < directions.Count; i++)
         {
-            Cell newNeighbor = GetCellAtRelativePos(nodeIndex, currDir);
+            Vector2Int currDir = directions[i].Vector;
+
+            Cell newNeighbor = FindCellByDirection(gridIndex, currDir);
             if (newNeighbor != null)
                 neightborCells.Add(newNeighbor);
         }
@@ -127,9 +129,9 @@ public class FlowField
         return neightborCells;
     }
 
-    Cell GetCellAtRelativePos(Vector2Int originPos, Vector2Int relativePos)
+    Cell FindCellByDirection(Vector2Int gridIndex, Vector2Int direction)
     {
-        Vector2Int finalPos = originPos + relativePos;
+        Vector2Int finalPos = gridIndex + direction;
 
         if (finalPos.x < 0 || finalPos.x >= GridSize.x || finalPos.y < 0 || finalPos.y >= GridSize.y)
             return null;

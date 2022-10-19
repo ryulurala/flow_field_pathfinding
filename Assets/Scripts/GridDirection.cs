@@ -12,14 +12,9 @@ public class GridDirection
         Vector = new Vector2Int(x, y);
     }
 
-    public static implicit operator Vector2Int(GridDirection direction)
-    {
-        return direction.Vector;
-    }
-
     public static GridDirection GetDirectionFromV2I(Vector2Int vector)
     {
-        return CardinalAndIntercardinalDirections.DefaultIfEmpty(None).FirstOrDefault(direction => direction == vector);
+        return CardinalAndIntercardinalDirections.DefaultIfEmpty(None).FirstOrDefault(direction => direction.Vector == vector);
     }
 
     public static readonly GridDirection None = new GridDirection(0, 0);
