@@ -45,9 +45,9 @@ public class FlowField
             foreach (Collider collider in obstacles)
             {
                 if (collider.gameObject.layer == LayerMask.NameToLayer("Impassible"))
-                    currCell.IncreaseCost(255);
+                    currCell.Cost = 255;
                 else if (collider.gameObject.layer == LayerMask.NameToLayer("RoughTerrain"))
-                    currCell.IncreaseCost(3);
+                    currCell.Cost = 3;
             }
         }
     }

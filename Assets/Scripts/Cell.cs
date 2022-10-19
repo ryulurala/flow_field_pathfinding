@@ -5,7 +5,8 @@ public class Cell
     public Vector3 WorldPos;        // Unity 좌표
     public Vector2Int GridIndex;
 
-    public byte Cost;
+    byte _cost;
+    public byte Cost { get => _cost; set => _cost = value >= byte.MaxValue ? byte.MaxValue : (byte)value; }
     public ushort BestCost;
     public GridDirection BestDirection;
 
@@ -17,15 +18,5 @@ public class Cell
         Cost = 1;
         BestCost = ushort.MaxValue;
         BestDirection = GridDirection.None;
-    }
-
-    public void IncreaseCost(int amount)
-    {
-        if (Cost == byte.MaxValue)
-            return;
-        else if (amount + Cost >= 255)
-            Cost = byte.MaxValue;
-        else
-            Cost += (byte)amount;
     }
 }
