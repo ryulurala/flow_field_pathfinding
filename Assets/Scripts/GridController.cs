@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+
 using UnityEditor;
 using UnityEngine;
 
@@ -32,16 +33,9 @@ public class GridController : MonoBehaviour
         GridSize = new Vector2Int(40, 25);
     }
 
-    void Awake()
-    {
-        CellRadius = 0.5f;
-        DisplayType = FlowFieldDisplayType.AllIcons;
-        GridSize = new Vector2Int(40, 25);
-    }
-
     void Update()
     {
-        if (Input.GetMouseButtonDown(1))
+        if (Input.GetMouseButtonDown(0))
         {
             InitializeFlowField();
 
@@ -96,19 +90,21 @@ public class GridController : MonoBehaviour
         GUIStyle style = new GUIStyle(GUI.skin.label);
         style.alignment = TextAnchor.MiddleCenter;
 
-        // switch (DisplayType)
-        // {
-        //     case FlowFieldDisplayType.CostField:
-        //         foreach (Cell cell in CurrFlowField.Grid)
-        //             Handles.Label(cell.WorldPos, cell.Cost.ToString(), style);
+#if UNITY_EDITOR
+        switch (DisplayType)
+        {
+            case FlowFieldDisplayType.CostField:
+                foreach (Cell cell in CurrFlowField.Grid)
+                    Handles.Label(cell.WorldPos, cell.Cost.ToString(), style);
 
-        //         break;
-        //     case FlowFieldDisplayType.IntegrationField:
-        //         foreach (Cell cell in CurrFlowField.Grid)
-        //             Handles.Label(cell.WorldPos, cell.BestCost.ToString(), style);
+                break;
+            case FlowFieldDisplayType.IntegrationField:
+                foreach (Cell cell in CurrFlowField.Grid)
+                    Handles.Label(cell.WorldPos, cell.BestCost.ToString(), style);
 
-        //         break;
-        // }
+                break;
+        }
+#endif
     }
 
     void DrawFlowField()
