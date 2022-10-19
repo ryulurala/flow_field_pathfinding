@@ -37,7 +37,8 @@ public class GridController : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(0))
         {
-            InitializeFlowField();
+            CurrFlowField = new FlowField(CellRadius, GridSize);
+            CurrFlowField.CreateGrid();
 
             CurrFlowField.CreateCostField();
 
@@ -62,12 +63,6 @@ public class GridController : MonoBehaviour
             return;
 
         DrawCostField();
-    }
-
-    void InitializeFlowField()
-    {
-        CurrFlowField = new FlowField(CellRadius, GridSize);
-        CurrFlowField.CreateGrid();
     }
 
     void DrawGrid(Vector2Int drawGridSize, Color drawColor, float drawCellRadius)
