@@ -12,6 +12,21 @@ public class UnitController : MonoBehaviour
 
     List<GameObject> _units = new List<GameObject>();
 
+    Transform _root;
+    Transform Root
+    {
+        get
+        {
+            if (_root == null)
+            {
+                _root = new GameObject("Root").transform;
+                _root.SetParent(transform);
+            }
+
+            return _root;
+        }
+    }
+
     void Reset()
     {
         NumUnitPerSpawn = 10;
@@ -33,7 +48,7 @@ public class UnitController : MonoBehaviour
 
         foreach (GameObject unit in _units)
         {
-            Cell nodeBelow = GridController.CurrFlowField.GetCellFromWorldPos(unit.transform.position);
+            Cell nodeBelow = GridController.CurrFlowField.FindCellFromWorldPos(unit.transform.position);
             Vector3 movedir = new Vector3(nodeBelow.BestDirection.Vector.x, 0, nodeBelow.BestDirection.Vector.y);
             Rigidbody unitRB = unit.GetComponent<Rigidbody>();
             unitRB.velocity = movedir * MoveSpeed;
@@ -43,29 +58,34 @@ public class UnitController : MonoBehaviour
     void SpawnUnits()
     {
         Vector2Int gridSize = GridController.GridSize;
+        Vector2 bias = new Vector2((float)gridSize.x / 2, (float)gridSize.y / 2);
+
         float nodeRadius = GridController.CellRadius;
-        Vector2 maxSpawnPos = new Vector2(gridSize.x * nodeRadius * 2 + nodeRadius, gridSize.y * nodeRadius * 2 + nodeRadius);
-        int colMask = LayerMask.GetMask("Impassible", "Units");
-        Vector3 newPos;
+        Vector2 spawnDist = new Vector2(gridSize.x * nodeRadius * 2 + nodeRadius - bias.x, gridSize.y * nodeRadius * 2 + nodeRadius - bias.y);
+        int layerMask = LayerMask.GetMask("Impassible", "Units");
+
+        float maxScale = Mathf.Max(UnitPrefab.transform.lossyScale.x, UnitPrefab.transform.lossyScale.y, UnitPrefab.transform.lossyScale.z);
+
         for (int i = 0; i < NumUnitPerSpawn; i++)
         {
             GameObject newUnit = Instantiate(UnitPrefab);
-            newUnit.transform.parent = transform;
+            newUnit.transform.SetParent(Root);
             _units.Add(newUnit);
 
+            // for. Passible or Rough Terrain 셀과 겹치도록
+            Vector3 newPos;
             do
             {
-                newPos = new Vector3(Random.Range(0, maxSpawnPos.x), 0, Random.Range(0, maxSpawnPos.y));
+                newPos = new Vector3(Random.Range(-spawnDist.x, spawnDist.x), 0, Random.Range(-spawnDist.y, spawnDist.y));
                 newUnit.transform.position = newPos;
             }
-            while (Physics.OverlapSphere(newPos, 0.25f, colMask).Length > 0);
+            while (Physics.OverlapSphere(newPos, maxScale, layerMask).Length > 0);
         }
     }
 
     void DestroyUnits()
     {
-        foreach (GameObject go in _units)
-            Destroy(go);
+        Destroy(Root.gameObject);
 
         _units.Clear();
     }

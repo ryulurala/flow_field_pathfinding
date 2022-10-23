@@ -5,10 +5,14 @@ public class Cell
     public Vector3 WorldPos;        // Unity 좌표
     public Vector2Int GridIndex;
 
-    byte _cost;
-    public byte Cost { get => _cost; set => _cost = value >= byte.MaxValue ? byte.MaxValue : (byte)value; }
-    public ushort BestCost;
-    public GridDirection BestDirection;
+    byte _cost;     // 0 ~ 255
+    public byte Cost
+    {
+        get => _cost;
+        set => _cost = value >= byte.MaxValue ? byte.MaxValue : (byte)value;
+    }
+    public ushort BestCost;     // 0 ~ 65535
+    public CellDirection BestDirection;
 
     public Cell(Vector3 worldPos, Vector2Int gridIndex)
     {
@@ -17,6 +21,6 @@ public class Cell
 
         Cost = 1;
         BestCost = ushort.MaxValue;
-        BestDirection = GridDirection.None;
+        BestDirection = CellDirection.None;
     }
 }

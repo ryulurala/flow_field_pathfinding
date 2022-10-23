@@ -1,34 +1,40 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class FlowField
 {
     public Cell[,] Grid { get; private set; }
-    public Vector2Int GridSize { get; private set; }
+    public Cell DestinationCell { get; private set; }
 
-    public float CellRadius { get; private set; }   // Grid 한 칸의 반지름
-    public float CellDiameter { get; private set; } // Grid 한 칸의 지름
+    readonly float _cellRadius;       // Grid 한 칸의 반지름
+    readonly float _cellDiameter;     // Grid 한 칸의 지름
 
-    public Cell DestinationCell { get; set; }
+    readonly Vector2Int _gridSize;
+    readonly float _biasX;      // for. 음수 위치 표현
+    readonly float _biasY;      // for. 음수 위치 표현
+
 
     public FlowField(float cellRadius, Vector2Int gridSize)
     {
-        CellRadius = cellRadius;
-        CellDiameter = cellRadius * 2f;
-        GridSize = gridSize;
+        _cellRadius = cellRadius;
+        _cellDiameter = cellRadius + cellRadius;
+
+        _gridSize = gridSize;
+
+        _biasX = (float)gridSize.x / 2;
+        _biasY = (float)gridSize.y / 2;
     }
 
     public void CreateGrid()
     {
-        Grid = new Cell[GridSize.x, GridSize.y];
+        // 2차원 Cell 배열(= Grid)를 생성한다.
+        Grid = new Cell[_gridSize.x, _gridSize.y];
 
-        for (int x = 0; x < GridSize.x; x++)
+        for (int x = 0; x < _gridSize.x; x++)
         {
-            for (int y = 0; y < GridSize.y; y++)
+            for (int y = 0; y < _gridSize.y; y++)
             {
-                Vector3 worldPos = new Vector3(CellDiameter * x + CellRadius, 0, CellDiameter * y + CellRadius);
+                Vector3 worldPos = new Vector3(_cellDiameter * x + _cellRadius - _biasX, 0, _cellDiameter * y + _cellRadius - _biasY);
                 Grid[x, y] = new Cell(worldPos, new Vector2Int(x, y));
             }
         }
@@ -36,7 +42,7 @@ public class FlowField
 
     public void CreateCostField()
     {
-        Vector3 cellHalfExtents = Vector3.one * CellRadius;
+        Vector3 cellHalfExtents = Vector3.one * _cellRadius;
         int terrainMask = LayerMask.GetMask("Impassible", "RoughTerrain");
 
         foreach (Cell currCell in Grid)
@@ -45,7 +51,7 @@ public class FlowField
             foreach (Collider collider in obstacles)
             {
                 if (collider.gameObject.layer == LayerMask.NameToLayer("Impassible"))
-                    currCell.Cost = 255;
+                    currCell.Cost = byte.MaxValue;
                 else if (collider.gameObject.layer == LayerMask.NameToLayer("RoughTerrain"))
                     currCell.Cost = 3;
             }
@@ -65,63 +71,64 @@ public class FlowField
 
         while (cellToCheck.Count > 0)
         {
-            Cell currCell = cellToCheck.Dequeue();
-            List<Cell> currNeighbors = GetNeighborCells(currCell.GridIndex, GridDirection.CardinalDirections);
-            foreach (Cell currNeighbor in currNeighbors)
+            Cell currentCell = cellToCheck.Dequeue();
+
+            // 주변 셀 탐색: 4방향
+            List<Cell> neighborCells = FindNeighborCells(currentCell.GridIndex, CellDirection.CardinalDirections);
+            foreach (Cell neighborCell in neighborCells)
             {
-                if (currNeighbor.Cost == byte.MaxValue)
+                // 갈 수 없는 길
+                if (neighborCell.Cost == byte.MaxValue)
                     continue;
-                else if (currNeighbor.Cost + currCell.BestCost < currNeighbor.BestCost)
+                else if (neighborCell.Cost + currentCell.BestCost < neighborCell.BestCost)
                 {
-                    currNeighbor.BestCost = (ushort)(currNeighbor.Cost + currCell.BestCost);
-                    cellToCheck.Enqueue(currNeighbor);
+                    // Cost 갱신
+                    neighborCell.BestCost = (ushort)(neighborCell.Cost + currentCell.BestCost);
+                    cellToCheck.Enqueue(neighborCell);
                 }
             }
         }
-    }
-
-    public Cell GetCellFromWorldPos(Vector3 worldPos)
-    {
-        float percentX = worldPos.x / (GridSize.x * CellDiameter);
-        float percentY = worldPos.z / (GridSize.y * CellDiameter);
-
-        percentX = Mathf.Clamp01(percentX);
-        percentY = Mathf.Clamp01(percentY);
-
-        int x = Mathf.Clamp(Mathf.FloorToInt(GridSize.x * percentX), 0, GridSize.x - 1);
-        int y = Mathf.Clamp(Mathf.FloorToInt(GridSize.y * percentY), 0, GridSize.y - 1);
-
-        return Grid[x, y];
     }
 
     public void CreateFlowField()
     {
         foreach (Cell cell in Grid)
         {
-            List<Cell> neighbors = GetNeighborCells(cell.GridIndex, GridDirection.AllDirections);
-
             int bestCost = cell.BestCost;
 
+            // 8방향 이동
+            List<Cell> neighbors = FindNeighborCells(cell.GridIndex, CellDirection.CardinalAndIntercardinalDirections);
             foreach (Cell neighborCell in neighbors)
             {
                 if (neighborCell.BestCost < bestCost)
                 {
                     bestCost = neighborCell.BestCost;
-                    cell.BestDirection = GridDirection.GetDirectionFromV2I(neighborCell.GridIndex - cell.GridIndex);
+                    cell.BestDirection = (CellDirection)(neighborCell.GridIndex - cell.GridIndex);
                 }
             }
         }
     }
 
-    List<Cell> GetNeighborCells(Vector2Int gridIndex, List<GridDirection> directions)
+    public Cell FindCellFromWorldPos(Vector3 worldPos)
+    {
+        float posX = worldPos.x;
+        float posY = worldPos.z;        // z axis
+
+        int indexX = Mathf.RoundToInt((posX - _cellRadius + _biasX) / _cellDiameter);
+        int indexY = Mathf.RoundToInt((posY - _cellRadius + _biasY) / _cellDiameter);
+        indexX = Mathf.Clamp(indexX, 0, _gridSize.x - 1);
+        indexY = Mathf.Clamp(indexY, 0, _gridSize.y - 1);
+
+        return Grid[indexX, indexY];
+    }
+
+    List<Cell> FindNeighborCells(Vector2Int gridIndex, List<CellDirection> directions)
     {
         List<Cell> neightborCells = new List<Cell>();
 
-        for (int i = 0; i < directions.Count; i++)
+        foreach (CellDirection currentDir in directions)
         {
-            Vector2Int currDir = directions[i].Vector;
-
-            Cell newNeighbor = FindCellByDirection(gridIndex, currDir);
+            Cell newNeighbor = FindCellFromDirection(gridIndex, currentDir);
             if (newNeighbor != null)
                 neightborCells.Add(newNeighbor);
         }
@@ -129,11 +136,11 @@ public class FlowField
         return neightborCells;
     }
 
-    Cell FindCellByDirection(Vector2Int gridIndex, Vector2Int direction)
+    Cell FindCellFromDirection(Vector2Int gridIndex, CellDirection direction)
     {
-        Vector2Int finalPos = gridIndex + direction;
+        Vector2Int finalPos = gridIndex + direction.Vector;
 
-        if (finalPos.x < 0 || finalPos.x >= GridSize.x || finalPos.y < 0 || finalPos.y >= GridSize.y)
+        if (finalPos.x < 0 || finalPos.x >= _gridSize.x || finalPos.y < 0 || finalPos.y >= _gridSize.y)
             return null;
         else
             return Grid[finalPos.x, finalPos.y];
