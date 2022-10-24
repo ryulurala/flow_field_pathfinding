@@ -43,14 +43,14 @@ public class FlowField
     public void CreateCostField()
     {
         Vector3 cellHalfExtents = Vector3.one * _cellRadius;
-        int terrainMask = LayerMask.GetMask("Impassible", "RoughTerrain");
+        int terrainMask = LayerMask.GetMask("Impassable", "RoughTerrain");
 
         foreach (Cell currCell in Grid)
         {
             Collider[] obstacles = Physics.OverlapBox(currCell.WorldPos, cellHalfExtents, Quaternion.identity, terrainMask);
             foreach (Collider collider in obstacles)
             {
-                if (collider.gameObject.layer == LayerMask.NameToLayer("Impassible"))
+                if (collider.gameObject.layer == LayerMask.NameToLayer("Impassable"))
                     currCell.Cost = byte.MaxValue;
                 else if (collider.gameObject.layer == LayerMask.NameToLayer("RoughTerrain"))
                     currCell.Cost = 3;

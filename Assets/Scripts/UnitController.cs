@@ -62,7 +62,7 @@ public class UnitController : MonoBehaviour
 
         float nodeRadius = GridController.CellRadius;
         Vector2 spawnDist = new Vector2(gridSize.x * nodeRadius * 2 + nodeRadius - bias.x, gridSize.y * nodeRadius * 2 + nodeRadius - bias.y);
-        int layerMask = LayerMask.GetMask("Impassible", "Units");
+        int layerMask = LayerMask.GetMask("Impassable", "Units");
 
         float maxScale = Mathf.Max(UnitPrefab.transform.lossyScale.x, UnitPrefab.transform.lossyScale.y, UnitPrefab.transform.lossyScale.z);
 
