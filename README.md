@@ -1,4 +1,4 @@
-# flow-field-pathfinding
+# flow_field_pathfinding
 
 Implements flow field pathfinding algorithm in Unity
 
